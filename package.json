@@ -1,30 +1,17 @@
 {
-  "name": "server-streamly",
+  "name": "streamly-server",
   "version": "1.0.0",
-  "description": "streamly server",
-  "main": "index.js",
+  "description": "",
   "type": "module",
+  "main": "server.mjs",
   "scripts": {
-    "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js"
+    "start": "node index.js"
   },
-  "author": "CreztY",
+  "keywords": [],
+  "author": "",
   "license": "ISC",
   "dependencies": {
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "mysql2": "^3.11.5",
+    "express": "^4.17.1",
     "pg": "^8.13.1"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.9",
-    "standard": "^17.1.2"
-  },
-  "eslintConfig": {
-    "extends": "./node_modules/standard/eslintrc.json",
-    "rules": {
-      "import/no-absolute-path": "off"
-    }
   }
 }
