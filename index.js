@@ -1,6 +1,5 @@
 import express from 'express'
 import mysql from 'mysql2'
-require('dotenv').config()
 
 const app = express()
 app.use(express.json())
