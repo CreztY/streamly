@@ -8,7 +8,7 @@ const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL })
 const app = express()
 
 // Definir un puerto para nuestro servidor
-const port = 3000 || process.env.PORT
+const port = process.env.PORT || 3000
 
 // Definir una ruta de prueba
 app.get('/', (req, res) => {
