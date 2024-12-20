@@ -19,8 +19,12 @@ app.get('/', (req, res) => {
 })
 
 app.get('/ping', async (req, res) => {
-  const result = await pool.query('SELECT NOW()')
-  return res.json(result.rows[0])
+  try {
+    const result = await pool.query('SELECT * FROM streamlydb')
+    return res.json(result)
+  } catch (error) {
+    return res.status(500).json({ error: 'Error de conexión a la base de datos' })
+  }
 })
 
 // Iniciar el servidor
