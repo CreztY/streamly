@@ -1,26 +1,19 @@
 import express from 'express'
-import mysql from 'mysql2'
+import { config } from 'dotenv'
+import pg from 'pg'
 
 const app = express()
 app.use(express.json())
 
-const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME
+config()
+
+const pool = new pg.Pool({
+  connectionString: process.env.EXTERNAL_IP
 })
 
-db.connect((err) => {
-  if (err) {
-    console.error('Error de conexión: ', err.stack)
-    return
-  }
-  console.log('Conectado a la base de datos')
-})
-
-app.get('/', (req, res) => {
-  res.send('¡Backend funcionando!')
+app.get('/', async (req, res) => {
+  const result = await pool.query('SELECT NOW()')
+  return res.json(result)
 })
 
 app.listen(process.env.PORT, () => {
