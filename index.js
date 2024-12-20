@@ -2,7 +2,10 @@ import express from 'express'
 import pg from 'pg'
 
 // Conectar a la base de datos
-const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL })
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: true
+})
 
 // Crear una nueva aplicación Express
 const app = express()
