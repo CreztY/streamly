@@ -2,9 +2,6 @@ import express from 'express'
 import pg from 'pg'
 import { initializeApp } from 'firebase/app'
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'
-import dotenv from 'dotenv'
-
-dotenv.config()
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
