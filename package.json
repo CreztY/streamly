@@ -12,6 +12,16 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
+    "firebase": "^11.1.0",
     "pg": "^8.13.1"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/standard/eslintrc.json",
+    "rules": {
+      "import/no-absolute-path": "off"
+    }
+  },
+  "devDependencies": {
+    "standard": "^17.1.2"
   }
 }
