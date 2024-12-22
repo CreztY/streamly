@@ -1,19 +1,15 @@
 import express from 'express'
 import pg from 'pg'
-import { initializeApp } from 'firebase/app'
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'
+import admin from 'firebase-admin'
+import dotenv from 'dotenv'
 
-const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID
-}
+dotenv.config()
 
-const app = initializeApp(firebaseConfig)
-const auth = getAuth(app)
+// Inicializar Firebase Admin SDK para la validación de tokens
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(),
+  databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`
+})
 
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
@@ -26,17 +22,17 @@ const server = express()
 server.use(express.json())
 
 server.post('/api/login', async (req, res) => {
-  const { email, password } = req.body
+  const { idToken } = req.body
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password)
-    const user = userCredential.user
+    const decodedToken = await admin.auth().verifyIdToken(idToken)
+    const uid = decodedToken.uid
 
-    const userResult = await pool.query('SELECT * FROM users WHERE uid = $1', [user.uid])
+    const userResult = await pool.query('SELECT * FROM users WHERE uid = $1', [uid])
     if (userResult.rows.length === 0) {
-      await pool.query('INSERT INTO users (uid, email, name) VALUES ($1, $2, $3)', [user.uid, user.email, user.displayName || ''])
+      await pool.query('INSERT INTO users (uid, email, name) VALUES ($1, $2, $3)', [uid, decodedToken.email, decodedToken.name || ''])
     }
 
-    res.json({ uid: user.uid, email: user.email, name: user.displayName })
+    res.json({ uid, email: decodedToken.email, name: decodedToken.name })
   } catch (error) {
     res.status(400).json({ error: error.message })
   }
