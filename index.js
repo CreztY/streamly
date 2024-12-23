@@ -23,6 +23,7 @@ server.use(express.json())
 
 server.post('/api/login', async (req, res) => {
   const { idToken } = req.body
+  console.log(idToken)
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken)
     const uid = decodedToken.uid
