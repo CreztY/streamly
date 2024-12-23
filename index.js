@@ -1,13 +1,6 @@
 import express from 'express'
 import pg from 'pg'
-import admin from 'firebase-admin'
 import cors from 'cors'
-
-// Inicializar Firebase Admin SDK para la validación de tokens
-admin.initializeApp({
-  credential: admin.credential.applicationDefault(),
-  databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`
-})
 
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
@@ -27,19 +20,13 @@ const corsOptions = {
 server.use(cors(corsOptions))
 
 server.post('/api/login', async (req, res) => {
-  const { idToken } = req.body
+  const { uid, email, name } = req.body
   try {
-    console.log('starting decodedToken...')
-    const decodedToken = await admin.auth().verifyIdToken(idToken)
-    const uid = decodedToken.uid
-    console.log('decodedToken: ', decodedToken)
-
     const userResult = await pool.query('SELECT * FROM users WHERE uid = $1', [uid])
     if (userResult.rows.length === 0) {
-      await pool.query('INSERT INTO users (uid, email, name) VALUES ($1, $2, $3)', [uid, decodedToken.email, decodedToken.name || ''])
+      await pool.query('INSERT INTO users (uid, email, name) VALUES ($1, $2, $3)', [uid, email, name || ''])
     }
-
-    res.json({ uid, email: decodedToken.email, name: decodedToken.name })
+    res.status(200).json({ message: 'Usuario registrado exitosamente' })
   } catch (error) {
     res.status(400).json({ error: error.message })
   }
@@ -52,8 +39,8 @@ server.get('/api/get-buttons', async (req, res) => {
     if (userResult.rows.length === 0) {
       return res.status(404).json({ error: 'Usuario no encontrado' })
     }
-    const userId = userResult.rows[0].id
-    const result = await pool.query('SELECT * FROM buttons WHERE user_id = $1', [userId])
+    const result = await pool.query('SELECT * FROM buttons WHERE user_id = $1', [uid])
+    console.log(result.rows)
     res.json(result.rows)
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener los botones' })
