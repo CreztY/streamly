@@ -44,13 +44,17 @@ server.post('/api/addbutton', async (req, res) => {
     const userId = userResult.rows[0].id
 
     // Obtener la pestaña del usuario
-    const tabResult = await pool.query(
+    let tabResult = await pool.query(
       'SELECT id FROM tabs WHERE user_id = $1 AND name = $2',
       [userId, tabName]
     )
 
     if (tabResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Pestaña no encontrada' })
+      await pool.query('INSERT INTO tabs (user_id, name) VALUES ($1, $2) RETURNING id', [userId, tabName])
+      tabResult = await pool.query(
+        'SELECT id FROM tabs WHERE user_id = $1 AND name = $2',
+        [userId, tabName]
+      )
     }
 
     const tabId = tabResult.rows[0].id
