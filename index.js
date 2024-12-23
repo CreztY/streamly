@@ -1,9 +1,6 @@
 import express from 'express'
 import pg from 'pg'
 import admin from 'firebase-admin'
-import dotenv from 'dotenv'
-
-dotenv.config()
 
 // Inicializar Firebase Admin SDK para la validación de tokens
 admin.initializeApp({
