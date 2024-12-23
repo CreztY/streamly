@@ -47,22 +47,126 @@ server.get('/api/get-buttons', async (req, res) => {
   }
 })
 
-server.post('/api/add-button', async (req, res) => {
-  const { uid, buttons } = req.body
+server.get('/api/get-buttons', async (req, res) => {
+  const { uid } = req.query
   try {
     const userResult = await pool.query('SELECT id FROM users WHERE uid = $1', [uid])
-    const userId = userResult.rows[0].id
-
-    for (const button of buttons) {
-      await pool.query(
-        'INSERT INTO buttons (user_id, function, image, name, profile_name, scene_name, scene_item) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-        [userId, button.function, button.image, button.name, button.profile_name, button.scene_name, button.scene_item]
-      )
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' })
     }
 
-    res.status(201).json({ message: 'Botones guardados exitosamente' })
+    const userId = userResult.rows[0].id
+    const result = await pool.query(
+      `SELECT b.* 
+       FROM buttons b 
+       INNER JOIN tabs t ON b.tab_id = t.id
+       WHERE t.user_id = $1`,
+      [userId]
+    )
+
+    res.json(result.rows)
   } catch (error) {
-    res.status(500).json({ error: 'Error al guardar los botones' })
+    console.error(error)
+    res.status(500).json({ error: 'Error al obtener los botones' })
+  }
+})
+
+server.post('/api/import-buttons', async (req, res) => {
+  const { uid, tabs } = req.body
+
+  try {
+    const userResult = await pool.query('SELECT id FROM users WHERE uid = $1', [uid])
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' })
+    }
+
+    const userId = userResult.rows[0].id
+
+    // Eliminar pestañas y botones asociados
+    await pool.query('DELETE FROM tabs WHERE user_id = $1', [userId])
+
+    // Insertar nuevas pestañas y botones
+    for (const tab of tabs) {
+      const tabResult = await pool.query(
+        'INSERT INTO tabs (user_id, name) VALUES ($1, $2) RETURNING id',
+        [userId, tab.name]
+      )
+      const tabId = tabResult.rows[0].id
+
+      for (const button of tab.buttons) {
+        await pool.query(
+          `INSERT INTO buttons 
+           (tab_id, function, image, name, scene_name, scene_collection_name, profile_name, sound, scene_item, scene_item_function)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+          [
+            tabId,
+            button.function,
+            button.image,
+            button.name,
+            button.sceneName || null,
+            button.sceneCollectionName || null,
+            button.profileName || null,
+            button.sound || null,
+            button.sceneItem || null,
+            button.sceneItemFunction || null
+          ]
+        )
+      }
+    }
+
+    res.json({ message: 'Botones importados correctamente' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Error al importar botones' })
+  }
+})
+
+server.post('/api/add-button', async (req, res) => {
+  const { uid, tabName, button } = req.body
+
+  try {
+    const userResult = await pool.query('SELECT id FROM users WHERE uid = $1', [uid])
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' })
+    }
+
+    const userId = userResult.rows[0].id
+
+    // Obtener la pestaña del usuario
+    const tabResult = await pool.query(
+      'SELECT id FROM tabs WHERE user_id = $1 AND name = $2',
+      [userId, tabName]
+    )
+
+    if (tabResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Pestaña no encontrada' })
+    }
+
+    const tabId = tabResult.rows[0].id
+
+    // Insertar el nuevo botón
+    await pool.query(
+      `INSERT INTO buttons 
+       (tab_id, function, image, name, scene_name, scene_collection_name, profile_name, sound, scene_item, scene_item_function)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      [
+        tabId,
+        button.function,
+        button.image,
+        button.name,
+        button.sceneName || null,
+        button.sceneCollectionName || null,
+        button.profileName || null,
+        button.sound || null,
+        button.sceneItem || null,
+        button.sceneItemFunction || null
+      ]
+    )
+
+    res.json({ message: 'Botón añadido correctamente' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Error al añadir botón' })
   }
 })
 
