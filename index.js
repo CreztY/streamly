@@ -39,21 +39,6 @@ server.get('/api/get-buttons', async (req, res) => {
     if (userResult.rows.length === 0) {
       return res.status(404).json({ error: 'Usuario no encontrado' })
     }
-    const result = await pool.query('SELECT * FROM buttons WHERE user_id = $1', [uid])
-    console.log(result.rows)
-    res.json(result.rows)
-  } catch (error) {
-    res.status(500).json({ error: 'Error al obtener los botones' })
-  }
-})
-
-server.get('/api/get-buttons', async (req, res) => {
-  const { uid } = req.query
-  try {
-    const userResult = await pool.query('SELECT id FROM users WHERE uid = $1', [uid])
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Usuario no encontrado' })
-    }
 
     const userId = userResult.rows[0].id
     const result = await pool.query(
