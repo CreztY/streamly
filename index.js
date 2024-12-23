@@ -88,7 +88,7 @@ server.post('/api/addbutton', async (req, res) => {
   }
 })
 
-server.get('/api/get-buttons', async (req, res) => {
+server.get('/api/getbuttons', async (req, res) => {
   const { uid } = req.query
   try {
     const userResult = await pool.query('SELECT id FROM users WHERE uid = $1', [uid])
