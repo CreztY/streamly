@@ -28,10 +28,10 @@ server.use(cors(corsOptions))
 
 server.post('/api/login', async (req, res) => {
   const { idToken } = req.body
-  console.log(idToken)
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken)
     const uid = decodedToken.uid
+    console.log('uid: ', uid)
 
     const userResult = await pool.query('SELECT * FROM users WHERE uid = $1', [uid])
     if (userResult.rows.length === 0) {
