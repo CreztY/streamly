@@ -55,6 +55,9 @@ server.post('/api/addbutton', async (req, res) => {
         'SELECT id FROM tabs WHERE user_id = $1 AND name = $2',
         [userId, tabName]
       )
+      if (tabResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Pestaña no encontrada' })
+      }
     }
 
     const tabId = tabResult.rows[0].id
