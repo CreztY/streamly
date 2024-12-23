@@ -1,6 +1,7 @@
 import express from 'express'
 import pg from 'pg'
 import admin from 'firebase-admin'
+import cors from 'cors'
 
 // Inicializar Firebase Admin SDK para la validación de tokens
 admin.initializeApp({
@@ -17,6 +18,13 @@ const pool = new pg.Pool({
 
 const server = express()
 server.use(express.json())
+
+const corsOptions = {
+  origin: 'http://streamly-deck.com',
+  optionsSuccessStatus: 200
+}
+
+server.use(cors(corsOptions))
 
 server.post('/api/login', async (req, res) => {
   const { idToken } = req.body
