@@ -90,6 +90,7 @@ server.post('/api/addbutton', async (req, res) => {
 
 server.get('/api/getbuttons', async (req, res) => {
   const { uid } = req.query
+  console.log(uid)
   try {
     const userResult = await pool.query('SELECT id FROM users WHERE uid = $1', [uid])
     if (userResult.rows.length === 0) {
@@ -105,6 +106,7 @@ server.get('/api/getbuttons', async (req, res) => {
       [userId]
     )
 
+    console.log('result.rows: ', result.rows)
     res.json(result.rows)
   } catch (error) {
     console.error(error)
