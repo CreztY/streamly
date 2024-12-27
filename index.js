@@ -63,12 +63,12 @@ server.post('/api/addbutton', async (req, res) => {
 
     const insertResult = await pool.query(
       `INSERT INTO buttons 
-       (tab_id, function, image, name, scene_name, scene_collection_name, profile_name, sound, scene_item, scene_item_function)
+       (tab_id, func, image, name, scene_name, scene_collection_name, profile_name, sound, scene_item, scene_item_function)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING id`,
       [
         tabId,
-        button.function,
+        button.func,
         button.image,
         button.name,
         button.sceneName || null,
@@ -111,11 +111,11 @@ server.post('/api/updatebutton', async (req, res) => {
     // Actualizar el botón
     await pool.query(
       `UPDATE buttons 
-       SET function = $1, image = $2, name = $3, scene_name = $4, scene_collection_name = $5, 
+       SET func = $1, image = $2, name = $3, scene_name = $4, scene_collection_name = $5, 
            profile_name = $6, sound = $7, scene_item = $8, scene_item_function = $9 
        WHERE id = $10 AND tab_id = $11`,
       [
-        button.function,
+        button.func,
         button.image,
         button.name,
         button.sceneName || null,
@@ -248,11 +248,11 @@ server.post('/api/import-buttons', async (req, res) => {
       for (const button of tab.buttons) {
         await pool.query(
           `INSERT INTO buttons 
-           (tab_id, function, image, name, scene_name, scene_collection_name, profile_name, sound, scene_item, scene_item_function)
+           (tab_id, func, image, name, scene_name, scene_collection_name, profile_name, sound, scene_item, scene_item_function)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
           [
             tabId,
-            button.function,
+            button.func,
             button.image,
             button.name,
             button.sceneName || null,
