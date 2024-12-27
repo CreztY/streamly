@@ -115,6 +115,38 @@ server.post('/api/removebutton', async (req, res) => {
   }
 })
 
+server.post('/api/removetab', async (req, res) => {
+  const { uid, tabName } = req.body
+
+  try {
+    const userResult = await pool.query('SELECT id FROM users WHERE uid = $1', [uid])
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' })
+    }
+
+    const userId = userResult.rows[0].id
+
+    // Obtener el ID de la pestaña
+    const tabResult = await pool.query('SELECT id FROM tabs WHERE name = $1 AND user_id = $2', [tabName, userId])
+    if (tabResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Pestaña no encontrada' })
+    }
+
+    const tabId = tabResult.rows[0].id
+
+    // Eliminar los botones asociados a la pestaña
+    await pool.query('DELETE FROM buttons WHERE tab_id = $1', [tabId])
+
+    // Eliminar la pestaña
+    await pool.query('DELETE FROM tabs WHERE id = $1', [tabId])
+
+    res.json({ message: 'Pestaña eliminada correctamente' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Error al eliminar la pestaña' })
+  }
+})
+
 server.get('/api/getbuttons', async (req, res) => {
   const { uid } = req.query
   try {
