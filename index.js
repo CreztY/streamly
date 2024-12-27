@@ -43,7 +43,6 @@ server.post('/api/addbutton', async (req, res) => {
 
     const userId = userResult.rows[0].id
 
-    // Obtener la pestaña del usuario
     let tabResult = await pool.query(
       'SELECT id FROM tabs WHERE user_id = $1 AND name = $2',
       [userId, tabName]
@@ -62,11 +61,11 @@ server.post('/api/addbutton', async (req, res) => {
 
     const tabId = tabResult.rows[0].id
 
-    // Insertar el nuevo botón
-    await pool.query(
+    const insertResult = await pool.query(
       `INSERT INTO buttons 
        (tab_id, function, image, name, scene_name, scene_collection_name, profile_name, sound, scene_item, scene_item_function)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       RETURNING id`,
       [
         tabId,
         button.function,
@@ -81,10 +80,38 @@ server.post('/api/addbutton', async (req, res) => {
       ]
     )
 
-    res.json({ message: 'Botón añadido correctamente' })
+    const newButtonId = insertResult.rows[0].id
+    res.json({ message: 'Botón añadido correctamente', buttonId: newButtonId })
   } catch (error) {
     console.error(error)
     res.status(500).json({ error: 'Error al añadir botón' })
+  }
+})
+
+server.post('/api/removebutton', async (req, res) => {
+  const { uid, tabName, id } = req.body
+
+  try {
+    const userResult = await pool.query('SELECT id FROM users WHERE uid = $1', [uid])
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' })
+    }
+
+    const userId = userResult.rows[0].id
+
+    const tabResult = await pool.query('SELECT id FROM tabs WHERE name = $1 AND user_id = $2', [tabName, userId])
+    if (tabResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Pestaña no encontrada' })
+    }
+
+    const tabId = tabResult.rows[0].id
+
+    await pool.query('DELETE FROM buttons WHERE tab_id = $1 AND id = $2', [tabId, id])
+
+    res.json({ message: 'Botón eliminado correctamente' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Error al eliminar el botón' })
   }
 })
 
