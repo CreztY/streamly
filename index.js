@@ -90,7 +90,6 @@ server.post('/api/addbutton', async (req, res) => {
 
 server.get('/api/getbuttons', async (req, res) => {
   const { uid } = req.query
-  console.log(uid)
   try {
     const userResult = await pool.query('SELECT id FROM users WHERE uid = $1', [uid])
     if (userResult.rows.length === 0) {
@@ -99,14 +98,12 @@ server.get('/api/getbuttons', async (req, res) => {
 
     const userId = userResult.rows[0].id
     const result = await pool.query(
-      `SELECT b.* 
+      `SELECT b.*, t.name as tab_name 
        FROM buttons b 
        INNER JOIN tabs t ON b.tab_id = t.id
        WHERE t.user_id = $1`,
       [userId]
     )
-
-    console.log('result.rows: ', result.rows)
     res.json(result.rows)
   } catch (error) {
     console.error(error)
