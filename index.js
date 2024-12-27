@@ -88,6 +88,53 @@ server.post('/api/addbutton', async (req, res) => {
   }
 })
 
+server.post('/api/updatebutton', async (req, res) => {
+  const { uid, tabName, button } = req.body
+
+  try {
+    const userResult = await pool.query('SELECT id FROM users WHERE uid = $1', [uid])
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' })
+    }
+
+    const userId = userResult.rows[0].id
+
+    // Obtener la pestaña del usuario
+    const tabResult = await pool.query('SELECT id FROM tabs WHERE name = $1 AND user_id = $2', [tabName, userId])
+    if (tabResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Pestaña no encontrada' })
+    }
+
+    const tabId = tabResult.rows[0].id
+
+    // Actualizar el botón
+    await pool.query(
+      `UPDATE buttons 
+       SET function = $1, image = $2, name = $3, scene_name = $4, scene_collection_name = $5, 
+           profile_name = $6, sound = $7, scene_item = $8, scene_item_function = $9 
+       WHERE id = $10 AND tab_id = $11`,
+      [
+        button.function,
+        button.image,
+        button.name,
+        button.sceneName || null,
+        button.sceneCollectionName || null,
+        button.profileName || null,
+        button.sound || null,
+        button.sceneItem || null,
+        button.sceneItemFunction || null,
+        button.id,
+        tabId
+      ]
+    )
+
+    res.json({ message: 'Botón actualizado correctamente' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Error al actualizar el botón' })
+  }
+})
+
 server.post('/api/removebutton', async (req, res) => {
   const { uid, tabName, id } = req.body
 
@@ -109,6 +156,11 @@ server.post('/api/removebutton', async (req, res) => {
     await pool.query('DELETE FROM buttons WHERE tab_id = $1 AND id = $2', [tabId, id])
 
     res.json({ message: 'Botón eliminado correctamente' })
+
+    const remainingButtons = await pool.query('SELECT id FROM buttons WHERE tab_id = $1 AND user_id = $2', [tabId, userId])
+    if (remainingButtons.rows.length === 0) {
+      await pool.query('DELETE FROM tabs WHERE id = $1 AND user_id = $2', [tabId, userId])
+    }
   } catch (error) {
     console.error(error)
     res.status(500).json({ error: 'Error al eliminar el botón' })
