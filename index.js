@@ -89,7 +89,7 @@ server.post('/api/addbutton', async (req, res) => {
 })
 
 server.post('/api/updatebutton', async (req, res) => {
-  const { uid, tabName, button } = req.body
+  const { uid, currentTab, button } = req.body
 
   console.log('update button: ', req.body)
   try {
@@ -101,7 +101,7 @@ server.post('/api/updatebutton', async (req, res) => {
     const userId = userResult.rows[0].id
 
     // Obtener la pestaña del usuario
-    const tabResult = await pool.query('SELECT id FROM tabs WHERE name = $1 AND user_id = $2', [tabName, userId])
+    const tabResult = await pool.query('SELECT id FROM tabs WHERE name = $1 AND user_id = $2', [currentTab, userId])
     if (tabResult.rows.length === 0) {
       return res.status(404).json({ error: 'Pestaña no encontrada' })
     }
