@@ -91,6 +91,7 @@ server.post('/api/addbutton', async (req, res) => {
 server.post('/api/updatebutton', async (req, res) => {
   const { uid, tabName, button } = req.body
 
+  console.log('update button: ', req.body)
   try {
     const userResult = await pool.query('SELECT id FROM users WHERE uid = $1', [uid])
     if (userResult.rows.length === 0) {
