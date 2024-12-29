@@ -196,7 +196,7 @@ server.post('/api/removetab', async (req, res) => {
     res.json({ message: 'Pestaña eliminada correctamente' })
   } catch (error) {
     console.error(error)
-    res.status(500).json({ error: 'Error al eliminar la pestaña' })
+    res.status(500).json({ error: 'Error al eliminar la pestaña' + error })
   }
 })
 
@@ -219,7 +219,27 @@ server.get('/api/getbuttons', async (req, res) => {
     res.json(result.rows)
   } catch (error) {
     console.error(error)
-    res.status(500).json({ error: 'Error al obtener los botones' })
+    res.status(500).json({ error: 'Error al obtener los botones' + error })
+  }
+})
+
+server.get('/api/getuserplan', async (req, res) => {
+  const { uid } = req.query
+  try {
+    const userResult = await pool.query('SELECT id FROM users WHERE uid = $1', [uid])
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' })
+    }
+
+    const userId = userResult.rows[0].id
+    const result = await pool.query('SELECT userplan FROM users WHERE user_id = $1', [userId])
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Plan de usuario no encontrado' })
+    }
+    res.json(result.rows)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Error al obtener el plan' })
   }
 })
 
