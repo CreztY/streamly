@@ -1,7 +1,7 @@
 import express from 'express'
 import pg from 'pg'
 import cors from 'cors'
-const stripe = require('stripe')('YOUR_SECRET_KEY')
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
@@ -20,26 +20,20 @@ const corsOptions = {
 
 server.use(cors(corsOptions))
 
-server.post('/create-checkout-session', async (req, res) => {
-  const { priceId } = req.body
-
+server.post('/api/checkout', async (req, res) => {
   try {
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1
-        }
-      ],
-      mode: 'subscription',
-      success_url: 'https://tu-sitio/success',
-      cancel_url: 'https://tu-sitio/cancel'
+    const { id } = req.body
+    const payment = await stripe.paymentIntents.create({
+      amount: 300,
+      currency: 'eur',
+      payment_method: id
     })
 
-    res.json({ id: session.id })
+    console.log(payment)
+    res.json({ message: 'Pago exitoso' })
   } catch (error) {
-    res.status(500).send({ error: error.message })
+    console.error(error)
+    res.status(500).json({ error: 'Error al crear pago: ' + error.raw.message })
   }
 })
 
