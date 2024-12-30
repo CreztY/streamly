@@ -1,6 +1,7 @@
 import express from 'express'
 import pg from 'pg'
 import cors from 'cors'
+const stripe = require('stripe')('YOUR_SECRET_KEY')
 
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
@@ -18,6 +19,29 @@ const corsOptions = {
 }
 
 server.use(cors(corsOptions))
+
+server.post('/create-checkout-session', async (req, res) => {
+  const { priceId } = req.body
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1
+        }
+      ],
+      mode: 'subscription',
+      success_url: 'https://tu-sitio/success',
+      cancel_url: 'https://tu-sitio/cancel'
+    })
+
+    res.json({ id: session.id })
+  } catch (error) {
+    res.status(500).send({ error: error.message })
+  }
+})
 
 server.post('/api/login', async (req, res) => {
   const { uid, email, name } = req.body
@@ -91,7 +115,6 @@ server.post('/api/addbutton', async (req, res) => {
 server.post('/api/updatebutton', async (req, res) => {
   const { uid, currentTab, button } = req.body
 
-  console.log('update button: ', req.body)
   try {
     const userResult = await pool.query('SELECT id FROM users WHERE uid = $1', [uid])
     if (userResult.rows.length === 0) {
