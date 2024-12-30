@@ -16,7 +16,7 @@ const server = express()
 server.use(express.json())
 
 const corsOptions = {
-  origin: 'http://streamly-deck.com',
+  origin: 'streamly-deck.com',
   optionsSuccessStatus: 200
 }
 
@@ -242,7 +242,7 @@ server.get('/api/getbuttons', async (req, res) => {
   }
 })
 
-server.get('/api/getuserplan', async (req, res) => {
+server.post('/api/getuserplan', async (req, res) => {
   const { uid } = req.query
   try {
     const userResult = await pool.query('SELECT id FROM users WHERE uid = $1', [uid])
