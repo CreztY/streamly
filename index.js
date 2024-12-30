@@ -1,7 +1,9 @@
 import express from 'express'
 import pg from 'pg'
 import cors from 'cors'
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+const Stripe = require('stripe')
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
