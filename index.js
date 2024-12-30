@@ -16,7 +16,7 @@ const server = express()
 server.use(express.json())
 
 const corsOptions = {
-  origin: 'streamly-deck.com',
+  origin: 'http://streamly-deck.com',
   optionsSuccessStatus: 200
 }
 
