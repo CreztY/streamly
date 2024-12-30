@@ -35,7 +35,7 @@ server.post('/api/checkout', async (req, res) => {
     res.json({ message: 'Pago exitoso' })
   } catch (error) {
     console.error(error)
-    res.status(500).json({ error: 'Error al crear pago: ' + error.raw.message })
+    res.status(500).json({ error: error.raw.message })
   }
 })
 
@@ -251,7 +251,7 @@ server.get('/api/getuserplan', async (req, res) => {
     }
 
     const userId = userResult.rows[0].id
-    const result = await pool.query('SELECT userplan FROM users WHERE user_id = $1', [userId])
+    const result = await pool.query('SELECT userplan FROM users WHERE uid = $1', [userId])
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Plan de usuario no encontrado' })
     }
