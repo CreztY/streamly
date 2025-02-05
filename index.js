@@ -52,6 +52,21 @@ server.post('/api/login', async (req, res) => {
   }
 })
 
+server.post('/api/addpremiumplan', async (req, res) => {
+  const { uid } = req.body
+  try {
+    const userResult = await pool.query('SELECT * FROM users WHERE uid = $1', [uid])
+    if (userResult.rows.length === 0) {
+      res.status(404).json({ message: 'Usuario no encontrado' })
+      return
+    }
+    await pool.query('UPDATE users SET userplan=$1 WHERE uid=$2', ['premium', uid])
+    res.status(200).json({ message: 'Plan de pago registrado exitosamente' })
+  } catch (error) {
+    res.status(400).json({ error: error.message })
+  }
+})
+
 server.post('/api/addbutton', async (req, res) => {
   const { uid, tabName, button } = req.body
 
