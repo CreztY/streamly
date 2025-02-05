@@ -22,20 +22,21 @@ const corsOptions = {
 
 server.use(cors(corsOptions))
 
-server.post('/api/checkout', async (req, res) => {
+server.post('/api/create-payment-intent', async (req, res) => {
+  const { amount } = req.body
+
   try {
-    const { id } = req.body
-    const payment = await stripe.paymentIntents.create({
-      amount: 300,
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount, // en centavos
       currency: 'eur',
-      payment_method: id
+      payment_method_types: ['card']
     })
 
-    console.log(payment)
-    res.json({ message: 'Pago exitoso' })
+    res.status(200).send({
+      clientSecret: paymentIntent.client_secret
+    })
   } catch (error) {
-    console.error(error)
-    res.status(500).json({ error: error.raw.message })
+    res.status(500).json({ error: error.message })
   }
 })
 
