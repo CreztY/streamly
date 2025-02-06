@@ -27,7 +27,7 @@ server.post('/api/create-payment-intent', async (req, res) => {
 
   try {
     const paymentIntent = await stripe.paymentIntents.create({
-      amount, // en centavos
+      amount,
       currency: 'eur',
       payment_method_types: ['card']
     })
@@ -266,8 +266,7 @@ server.post('/api/getuserplan', async (req, res) => {
       return res.status(404).json({ error: 'Usuario no encontrado' })
     }
 
-    const userId = userResult.rows[0].id
-    const result = await pool.query('SELECT userplan FROM users WHERE uid = $1', [userId])
+    const result = await pool.query('SELECT userplan FROM users WHERE uid = $1', [uid])
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Plan de usuario no encontrado' })
     }
